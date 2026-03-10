@@ -121,13 +121,16 @@ Plot Input
 ChatGPT Plot Analyzer → PlotFeatures (genre, themes, keywords)
    │
    ▼
-Weighted Similarity Engine
+Weighted Similarity Engine ← Historical Dataset (CSV)
    │
    ▼
 Similar Movies → Average ROI
    │
    ▼
-Monte Carlo Simulation (1,000 runs)
+Evaluator Interface
+   │
+   ▼
+ROI Evaluator → Monte Carlo Simulation (1,000 runs)
    │
    ▼
 Budget Optimizer ($20M–$120M)
@@ -136,7 +139,7 @@ Budget Optimizer ($20M–$120M)
 ChatGPT Explanation Generator
 ```
 
-The LLM handles creative interpretation only. All financial modeling (ROI calculation, Monte Carlo simulation, budget optimization) remains deterministic.
+The LLM handles creative interpretation only. All financial modeling (ROI calculation, Monte Carlo simulation, budget optimization) remains deterministic. The Evaluator interface makes the system extensible — swap in an ML predictor, engagement model, or risk model without changing the optimizer.
 
 ## Dataset
 
