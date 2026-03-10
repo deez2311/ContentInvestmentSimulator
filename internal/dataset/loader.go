@@ -31,9 +31,14 @@ func LoadMovies(path string) ([]model.Movie, error) {
 	}
 
 	// Skip header row (index 0), parse data rows
+	const expectedCols = 5
 	movies := make([]model.Movie, 0, len(records)-1)
 	for i, row := range records[1:] {
 		rowNum := i + 2 // 1-indexed, accounting for header
+
+		if len(row) < expectedCols {
+			return nil, fmt.Errorf("row %d: expected %d columns, got %d", rowNum, expectedCols, len(row))
+		}
 
 		budget, err := strconv.ParseFloat(row[3], 64)
 		if err != nil {

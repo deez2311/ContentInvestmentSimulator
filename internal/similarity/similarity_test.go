@@ -3,6 +3,7 @@ package similarity
 import (
 	"testing"
 
+	"simulator/internal/llm"
 	"simulator/internal/model"
 )
 
@@ -19,82 +20,129 @@ var testMovies = []model.Movie{
 	{Title: "Broken Oath", Genre: "Drama", Theme: "Justice", Budget: 30, Revenue: 100},
 }
 
-func TestFindSimilarMovies_KnownPlot(t *testing.T) {
-	result := FindSimilarMovies("action revenge", testMovies)
+func TestFindSimilarMovies_KnownFeatures(t *testing.T) {
+	features := llm.PlotFeatures{
+		Genre:    "Action",
+		Themes:   []string{"Revenge"},
+		Keywords: []string{"police"},
+	}
+	result := FindSimilarMovies(features, testMovies)
 	if len(result) == 0 {
 		t.Fatal("expected at least one result")
 	}
 	if len(result) > 3 {
 		t.Fatalf("expected at most 3 results, got %d", len(result))
 	}
-	// "Shadow Strike" matches both "action" (genre) and "revenge" (theme) → 2 matches
+	// Shadow Strike: genre Action=+3, theme Revenge=+2 → score 5
 	if result[0].Title != "Shadow Strike" {
 		t.Errorf("expected first result to be Shadow Strike, got %s", result[0].Title)
 	}
 }
 
 func TestFindSimilarMovies_NoMatch(t *testing.T) {
-	result := FindSimilarMovies("romance musical", testMovies)
+	features := llm.PlotFeatures{
+		Genre:    "Romance",
+		Themes:   []string{"Musical"},
+		Keywords: []string{"dance"},
+	}
+	result := FindSimilarMovies(features, testMovies)
 	if len(result) != 0 {
 		t.Errorf("expected empty result, got %d movies", len(result))
 	}
 }
 
-func TestFindSimilarMovies_EmptyPlot(t *testing.T) {
-	result := FindSimilarMovies("", testMovies)
-	if len(result) != 0 {
-		t.Errorf("expected empty result for empty plot, got %d movies", len(result))
-	}
-}
-
 func TestFindSimilarMovies_EmptyMovies(t *testing.T) {
-	result := FindSimilarMovies("action revenge", nil)
+	features := llm.PlotFeatures{
+		Genre:    "Action",
+		Themes:   []string{"Revenge"},
+		Keywords: []string{"assassin"},
+	}
+	result := FindSimilarMovies(features, nil)
 	if len(result) != 0 {
 		t.Errorf("expected empty result for nil movies, got %d movies", len(result))
 	}
 }
 
 func TestFindSimilarMovies_CaseInsensitive(t *testing.T) {
-	lower := FindSimilarMovies("action revenge", testMovies)
-	upper := FindSimilarMovies("ACTION REVENGE", testMovies)
-	mixed := FindSimilarMovies("AcTiOn ReVeNgE", testMovies)
+	lower := llm.PlotFeatures{Genre: "action", Themes: []string{"revenge"}, Keywords: []string{"police"}}
+	upper := llm.PlotFeatures{Genre: "ACTION", Themes: []string{"REVENGE"}, Keywords: []string{"POLICE"}}
+	mixed := llm.PlotFeatures{Genre: "AcTiOn", Themes: []string{"ReVeNgE"}, Keywords: []string{"PoLiCe"}}
 
-	if len(lower) != len(upper) || len(lower) != len(mixed) {
-		t.Fatalf("case-insensitive mismatch: lower=%d upper=%d mixed=%d", len(lower), len(upper), len(mixed))
+	resultLower := FindSimilarMovies(lower, testMovies)
+	resultUpper := FindSimilarMovies(upper, testMovies)
+	resultMixed := FindSimilarMovies(mixed, testMovies)
+
+	if len(resultLower) != len(resultUpper) || len(resultLower) != len(resultMixed) {
+		t.Fatalf("case-insensitive mismatch: lower=%d upper=%d mixed=%d",
+			len(resultLower), len(resultUpper), len(resultMixed))
 	}
-	for i := range lower {
-		if lower[i].Title != upper[i].Title || lower[i].Title != mixed[i].Title {
+	for i := range resultLower {
+		if resultLower[i].Title != resultUpper[i].Title || resultLower[i].Title != resultMixed[i].Title {
 			t.Errorf("result mismatch at index %d: lower=%s upper=%s mixed=%s",
-				i, lower[i].Title, upper[i].Title, mixed[i].Title)
+				i, resultLower[i].Title, resultUpper[i].Title, resultMixed[i].Title)
 		}
 	}
 }
 
 func TestFindSimilarMovies_ReturnsAtMost3(t *testing.T) {
-	// "action" matches Shadow Strike, Iron Justice, Urban Pursuit (all Action genre)
-	result := FindSimilarMovies("action", testMovies)
+	// Genre "Action" matches Shadow Strike, Iron Justice, Urban Pursuit
+	// Keyword "thriller" matches Deep Harbor, Silent Witness
+	// That's 5 movies with score > 0, but we should get at most 3
+	features := llm.PlotFeatures{
+		Genre:    "Action",
+		Themes:   []string{},
+		Keywords: []string{"Thriller"},
+	}
+	result := FindSimilarMovies(features, testMovies)
 	if len(result) > 3 {
 		t.Errorf("expected at most 3 results, got %d", len(result))
 	}
 }
 
-func TestFindSimilarMovies_SortedByRelevance(t *testing.T) {
-	// "action revenge" → Shadow Strike has 2 matches (action+revenge), others have 1
-	result := FindSimilarMovies("action revenge", testMovies)
+func TestFindSimilarMovies_SortedByScore(t *testing.T) {
+	// Shadow Strike: genre Action=+3, theme Revenge=+2 → score 5
+	// Iron Justice: genre Action=+3 → score 3
+	// Urban Pursuit: genre Action=+3 → score 3
+	features := llm.PlotFeatures{
+		Genre:  "Action",
+		Themes: []string{"Revenge"},
+	}
+	result := FindSimilarMovies(features, testMovies)
 	if len(result) < 2 {
 		t.Fatal("expected at least 2 results")
 	}
-	// First result should have the most matches
 	if result[0].Title != "Shadow Strike" {
-		t.Errorf("expected Shadow Strike first (2 matches), got %s", result[0].Title)
+		t.Errorf("expected Shadow Strike first (score 5), got %s", result[0].Title)
 	}
 }
 
-func TestFindSimilarMovies_PartialWordMatch(t *testing.T) {
-	// "crim" should match "Crime" genre/theme via strings.Contains
-	result := FindSimilarMovies("crim", testMovies)
+func TestFindSimilarMovies_GenreMatchScores3(t *testing.T) {
+	features := llm.PlotFeatures{Genre: "Comedy"}
+	result := FindSimilarMovies(features, testMovies)
+	if len(result) != 1 {
+		t.Fatalf("expected 1 result for Comedy genre, got %d", len(result))
+	}
+	if result[0].Title != "Last Laugh" {
+		t.Errorf("expected Last Laugh, got %s", result[0].Title)
+	}
+}
+
+func TestFindSimilarMovies_ThemeAndKeywordScoring(t *testing.T) {
+	// Test that themes and keywords contribute to scoring
+	// Deep Harbor: Genre=Thriller, Theme=Crime
+	// features: Genre=Thriller (+3), Themes=Crime (+2), Keywords=Thriller (+1 via genre match)
+	features := llm.PlotFeatures{
+		Genre:    "Thriller",
+		Themes:   []string{"Crime"},
+		Keywords: []string{"Thriller"},
+	}
+	result := FindSimilarMovies(features, testMovies)
 	if len(result) == 0 {
-		t.Fatal("expected partial word match for 'crim' against 'Crime'")
+		t.Fatal("expected at least one result")
+	}
+	// Deep Harbor: genre Thriller=+3, theme Crime=+2, keyword Thriller matches genre=+1 → score 6
+	if result[0].Title != "Deep Harbor" {
+		t.Errorf("expected Deep Harbor first, got %s", result[0].Title)
 	}
 }
 
@@ -105,7 +153,6 @@ func TestAverageROI_ValidMovies(t *testing.T) {
 		{Title: "C", Genre: "Action", Theme: "Police", Budget: 55, Revenue: 230},
 	}
 	got := AverageROI(movies)
-	// Expected: (320/60 + 300/70 + 230/55) / 3
 	expected := (320.0/60.0 + 300.0/70.0 + 230.0/55.0) / 3.0
 	if diff := got - expected; diff > 1e-9 || diff < -1e-9 {
 		t.Errorf("AverageROI = %f, want %f", got, expected)
@@ -118,7 +165,7 @@ func TestAverageROI_ExcludesZeroBudget(t *testing.T) {
 		{Title: "ZeroBudget", Budget: 0, Revenue: 100},
 	}
 	got := AverageROI(movies)
-	expected := 200.0 / 50.0 // only the valid movie
+	expected := 200.0 / 50.0
 	if diff := got - expected; diff > 1e-9 || diff < -1e-9 {
 		t.Errorf("AverageROI = %f, want %f", got, expected)
 	}

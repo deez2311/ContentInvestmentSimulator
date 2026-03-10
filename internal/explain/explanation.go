@@ -15,10 +15,10 @@ func Generate(similarMovies []model.Movie, avgROI float64) string {
 	b.WriteString("Based on similar titles:\n\n")
 
 	for _, m := range similarMovies {
-		b.WriteString(fmt.Sprintf("%s (ROI %.1fx)\n", m.Title, m.ROI()))
+		fmt.Fprintf(&b, "%s (ROI %.1fx)\n", m.Title, m.ROI())
 	}
 
-	b.WriteString(fmt.Sprintf("\nAverage ROI across similar films: %.1fx\n", avgROI))
+	fmt.Fprintf(&b, "\nAverage ROI across similar films: %.1fx\n", avgROI)
 
 	return b.String()
 }

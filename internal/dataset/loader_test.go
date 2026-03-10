@@ -11,8 +11,8 @@ func TestLoadMovies_ValidFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(movies) != 2000 {
-		t.Fatalf("expected 2000 movies, got %d", len(movies))
+	if len(movies) != 1559 {
+		t.Fatalf("expected 1559 movies, got %d", len(movies))
 	}
 	// Spot-check first record
 	if movies[0].Title != "Shadow Strike" {

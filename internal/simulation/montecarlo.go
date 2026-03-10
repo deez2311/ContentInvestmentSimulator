@@ -13,14 +13,12 @@ func Simulate(budget, avgROI, noiseMean, noiseStddev float64, runs int) []float6
 		return []float64{}
 	}
 	results := make([]float64, runs)
-	for i := 0; i < runs; i++ {
+	if budget == 0 {
+		return results // all zeros
+	}
+	for i := range runs {
 		noise := rand.NormFloat64()*noiseStddev + noiseMean
-		revenue := budget * avgROI * noise
-		if budget == 0 {
-			results[i] = 0
-		} else {
-			results[i] = revenue / budget
-		}
+		results[i] = avgROI * noise
 	}
 	return results
 }

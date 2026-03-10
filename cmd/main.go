@@ -7,7 +7,7 @@ import (
 
 	"simulator/internal/dataset"
 	"simulator/internal/evaluator"
-	"simulator/internal/explain"
+	"simulator/internal/llm"
 	"simulator/internal/optimizer"
 	"simulator/internal/similarity"
 )
@@ -19,12 +19,24 @@ func main() {
 		os.Exit(1)
 	}
 
+	client, err := llm.NewClient()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to initialize LLM client: %v\n", err)
+		os.Exit(1)
+	}
+
 	fmt.Println("Enter movie plot:")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	plot := scanner.Text()
 
-	similar := similarity.FindSimilarMovies(plot, movies)
+	features, err := llm.AnalyzePlot(client, plot)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to analyze plot: %v\n", err)
+		os.Exit(1)
+	}
+
+	similar := similarity.FindSimilarMovies(features, movies)
 
 	if len(similar) == 0 {
 		fmt.Println("No similar titles found for the given plot.")
@@ -42,7 +54,11 @@ func main() {
 
 	optimal := optimizer.FindOptimalBudget(eval)
 
-	explanation := explain.Generate(similar, avgROI)
+	explanation, err := llm.GenerateExplanation(client, plot, similar, avgROI)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to generate explanation: %v\n", err)
+		os.Exit(1)
+	}
 
 	fmt.Println()
 	fmt.Println("Similar Titles")
@@ -61,5 +77,5 @@ func main() {
 	fmt.Println()
 	fmt.Println("Explanation")
 	fmt.Println("-----------")
-	fmt.Print(explanation)
+	fmt.Println(explanation)
 }
