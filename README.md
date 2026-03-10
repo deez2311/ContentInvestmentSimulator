@@ -1,6 +1,6 @@
 # Content Investment Simulator
 
-[Watch the demo](https://drive.google.com/file/d/1Fp0No5HGz3mO9Jtg4INEz1sEgZC3GRy7/view?usp=drive_link)
+[Watch the demo](https://drive.google.com/file/d/1usw2dIHErJgCi4F9AptJxdu7DKKN0jwe/view?usp=drive_link)
 
 A command-line tool that answers a simple question: given a new movie plot, how much should you invest and what return can you expect?
 
@@ -80,14 +80,15 @@ Input:
 
 ```
 Enter movie plot:
+```
+
+```
 Jesse, who meets a French student, Céline, on a train heading through Europe. Feeling an instant connection, Jesse convinces Céline to get off the train with him in Vienna and spend the night exploring the city before his flight the next morning. As they wander through streets, cafés, parks, and landmarks, they talk deeply about life, love, relationships, and their fears about the future, gradually forming a romantic bond during their brief time together. Knowing their meeting is temporary, they part ways in the morning but agree to return to the same station in six months, leaving their reunion to fate.
 ```
 
 Output:
 
 ```
-Extracted Features: Genre="Romantic Drama", Themes=[chance encounter romance fate], Keywords=[train journey Vienna short romantic encounter longing]
-
 Similar Titles
 --------------
 Broken Oath
@@ -102,7 +103,11 @@ Confidence Interval: 2.1x – 4.0x
 
 Explanation
 -----------
-These movies are similar to the user plot in terms of their focus on relationships and deep emotional connections between the characters. They all explore themes of love, loss, and the passage of time, and have a strong emphasis on character development and introspection. Additionally, they all fall under the drama genre, which allows for a more nuanced exploration of the characters' emotions and experiences.
+These movies share the user plot's focus on deep emotional connections and
+introspective character journeys. They explore themes of love, loss, and the
+passage of time within the drama genre, allowing nuanced portrayals of
+relationships and personal growth that mirror the plot's romantic, fate-driven
+narrative.
 ```
 
 Note: Similar titles, ROI values, and the optimal budget will vary between runs due to the stochastic nature of the Monte Carlo simulation and LLM responses.
@@ -160,13 +165,11 @@ go test ./...
     │   ├── evaluator.go
     │   ├── roi.go
     │   └── roi_test.go
-    ├── explain/
-    │   ├── explanation.go
-    │   └── explanation_test.go
     ├── llm/
     │   ├── client.go
-    │   ├── plot_analyzer.go
-    │   └── explanation.go
+    │   ├── client_test.go
+    │   ├── explanation.go
+    │   └── plot_analyzer.go
     ├── model/
     │   ├── movie.go
     │   └── movie_test.go
