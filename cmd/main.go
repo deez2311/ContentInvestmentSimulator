@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 
@@ -13,7 +14,10 @@ import (
 )
 
 func main() {
-	movies, err := dataset.LoadMovies("data/movies.csv")
+	dataPath := flag.String("data", "data/movies.csv", "path to movies CSV dataset")
+	flag.Parse()
+
+	movies, err := dataset.LoadMovies(*dataPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to load dataset: %v\n", err)
 		os.Exit(1)
@@ -28,6 +32,10 @@ func main() {
 	fmt.Println("Enter movie plot:")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to read input: %v\n", err)
+		os.Exit(1)
+	}
 	plot := scanner.Text()
 
 	features, err := llm.AnalyzePlot(client, plot)
@@ -35,8 +43,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Failed to analyze plot: %v\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Printf("\nExtracted Features: Genre=%q, Themes=%v, Keywords=%v\n", features.Genre, features.Themes, features.Keywords)
 
 	similar := similarity.FindSimilarMovies(features, movies)
 

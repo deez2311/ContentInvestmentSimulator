@@ -1,5 +1,7 @@
 # Content Investment Simulator
 
+[Watch the demo](https://drive.google.com/file/d/1Fp0No5HGz3mO9Jtg4INEz1sEgZC3GRy7/view?usp=drive_link)
+
 A command-line tool that answers a simple question: given a new movie plot, how much should you invest and what return can you expect?
 
 You type in a movie plot. The system uses ChatGPT to analyze the plot into structured semantic features (genre, themes, keywords), finds historically similar titles from a dataset using weighted matching, computes their average ROI, runs a Monte Carlo simulation to model uncertainty, and recommends an optimal budget with a confidence interval. ChatGPT also generates a natural-language explanation of why those movies were selected.

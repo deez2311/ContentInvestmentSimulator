@@ -57,6 +57,17 @@ func NewClient() (*Client, error) {
 	}, nil
 }
 
+// NewTestClient creates a Client with a custom endpoint and HTTP client,
+// useful for testing without hitting the real OpenAI API.
+func NewTestClient(endpoint string, httpClient *http.Client) *Client {
+	return &Client{
+		apiKey:     "test-key",
+		httpClient: httpClient,
+		model:      "gpt-3.5-turbo",
+		endpoint:   endpoint,
+	}
+}
+
 // Chat sends a prompt to ChatGPT and returns the text response.
 // Returns an error with HTTP status code and body on API failure.
 func (c *Client) Chat(prompt string) (string, error) {
@@ -90,9 +101,10 @@ func (c *Client) Chat(prompt string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	const maxResponseSize = 1 << 20 // 1 MB
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseSize))
 	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %w", err)
+		return "", fmt.Errorf("failed to read response body (status %d): %w", resp.StatusCode, err)
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {

@@ -14,7 +14,9 @@ import (
 //	genre match = +3, each theme match = +2, each keyword match = +1
 //
 // Returns up to 3 movies sorted by descending score. Movies with score 0 are excluded.
-// All comparisons are case-insensitive using strings.EqualFold.
+// All comparisons are case-insensitive using strings.Contains for partial matching
+// (e.g. LLM genre "Action Thriller" matches dataset genre "Action").
+// Empty feature strings are skipped to avoid false-positive matches.
 func FindSimilarMovies(features llm.PlotFeatures, movies []model.Movie) []model.Movie {
 	if len(movies) == 0 {
 		return []model.Movie{}
@@ -25,6 +27,8 @@ func FindSimilarMovies(features llm.PlotFeatures, movies []model.Movie) []model.
 		score int
 	}
 
+	featGenre := strings.ToLower(features.Genre)
+
 	var results []scored
 	for _, m := range movies {
 		score := 0
@@ -33,15 +37,14 @@ func FindSimilarMovies(features llm.PlotFeatures, movies []model.Movie) []model.
 		movieTheme := strings.ToLower(m.Theme)
 
 		// Genre match: +3 (partial match — e.g. "Romance" matches "Romantic Drama")
-		featGenre := strings.ToLower(features.Genre)
-		if strings.Contains(featGenre, movieGenre) || strings.Contains(movieGenre, featGenre) {
+		if featGenre != "" && (strings.Contains(featGenre, movieGenre) || strings.Contains(movieGenre, featGenre)) {
 			score += 3
 		}
 
 		// Theme overlap: +2 for each matching theme (partial match)
 		for _, theme := range features.Themes {
 			t := strings.ToLower(theme)
-			if strings.Contains(t, movieTheme) || strings.Contains(movieTheme, t) {
+			if t != "" && (strings.Contains(t, movieTheme) || strings.Contains(movieTheme, t)) {
 				score += 2
 			}
 		}
@@ -49,8 +52,8 @@ func FindSimilarMovies(features llm.PlotFeatures, movies []model.Movie) []model.
 		// Keyword overlap: +1 for each keyword matching genre or theme (partial match)
 		for _, kw := range features.Keywords {
 			k := strings.ToLower(kw)
-			if strings.Contains(k, movieGenre) || strings.Contains(movieGenre, k) ||
-				strings.Contains(k, movieTheme) || strings.Contains(movieTheme, k) {
+			if k != "" && (strings.Contains(k, movieGenre) || strings.Contains(movieGenre, k) ||
+				strings.Contains(k, movieTheme) || strings.Contains(movieTheme, k)) {
 				score += 1
 			}
 		}
@@ -67,7 +70,7 @@ func FindSimilarMovies(features llm.PlotFeatures, movies []model.Movie) []model.
 	limit := min(3, len(results))
 
 	out := make([]model.Movie, limit)
-	for i := 0; i < limit; i++ {
+	for i := range limit {
 		out[i] = results[i].movie
 	}
 	return out

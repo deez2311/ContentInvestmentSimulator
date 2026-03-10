@@ -3,16 +3,22 @@ package dataset
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
 func TestLoadMovies_ValidFile(t *testing.T) {
-	movies, err := LoadMovies("../../data/movies.csv")
+	dir := t.TempDir()
+	path := filepath.Join(dir, "test.csv")
+	content := "title,genre,theme,budget,revenue\nShadow Strike,Action,Revenge,60,320\nIron Justice,Action,Police,70,300\n"
+	os.WriteFile(path, []byte(content), 0644)
+
+	movies, err := LoadMovies(path)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(movies) != 1559 {
-		t.Fatalf("expected 1559 movies, got %d", len(movies))
+	if len(movies) != 2 {
+		t.Fatalf("expected 2 movies, got %d", len(movies))
 	}
 	// Spot-check first record
 	if movies[0].Title != "Shadow Strike" {
@@ -72,7 +78,7 @@ func TestLoadMovies_MalformedBudget(t *testing.T) {
 		t.Fatal("expected error for malformed budget")
 	}
 	errMsg := err.Error()
-	if !contains(errMsg, "row 2") || !contains(errMsg, "budget") {
+	if !strings.Contains(errMsg, "row 2") || !strings.Contains(errMsg, "budget") {
 		t.Errorf("error should mention row number and field name, got: %s", errMsg)
 	}
 }
@@ -88,20 +94,7 @@ func TestLoadMovies_MalformedRevenue(t *testing.T) {
 		t.Fatal("expected error for malformed revenue")
 	}
 	errMsg := err.Error()
-	if !contains(errMsg, "row 2") || !contains(errMsg, "revenue") {
+	if !strings.Contains(errMsg, "row 2") || !strings.Contains(errMsg, "revenue") {
 		t.Errorf("error should mention row number and field name, got: %s", errMsg)
 	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && searchString(s, substr)
-}
-
-func searchString(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }

@@ -8,6 +8,7 @@ import (
 // Simulate runs n Monte Carlo iterations and returns the slice of simulated ROI values.
 // Each run: revenue = budget * avgROI * noise, where noise ~ N(noiseMean, noiseStddev).
 // The returned values are simulatedRevenue / budget (i.e., avgROI * noise).
+// Note: math/rand's global source is automatically seeded since Go 1.20.
 func Simulate(budget, avgROI, noiseMean, noiseStddev float64, runs int) []float64 {
 	if runs <= 0 {
 		return []float64{}

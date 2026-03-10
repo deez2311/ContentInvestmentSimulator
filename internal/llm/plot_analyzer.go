@@ -3,6 +3,7 @@ package llm
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // PlotFeatures holds structured semantic metadata extracted from a movie plot.
@@ -34,8 +35,15 @@ Plot:
 		return PlotFeatures{}, err
 	}
 
+	// Strip markdown code fences that LLMs sometimes wrap around JSON
+	cleaned := strings.TrimSpace(response)
+	cleaned = strings.TrimPrefix(cleaned, "```json")
+	cleaned = strings.TrimPrefix(cleaned, "```")
+	cleaned = strings.TrimSuffix(cleaned, "```")
+	cleaned = strings.TrimSpace(cleaned)
+
 	var features PlotFeatures
-	if err := json.Unmarshal([]byte(response), &features); err != nil {
+	if err := json.Unmarshal([]byte(cleaned), &features); err != nil {
 		return PlotFeatures{}, fmt.Errorf("failed to parse LLM response as JSON: %w", err)
 	}
 
