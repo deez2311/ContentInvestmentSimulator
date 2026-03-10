@@ -152,7 +152,10 @@ go test ./...
 
 ```
 .
+├── .gitignore
+├── demo.png
 ├── go.mod
+├── go.sum
 ├── cmd/
 │   └── main.go
 ├── data/
