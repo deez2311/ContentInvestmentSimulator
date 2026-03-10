@@ -78,38 +78,29 @@ Input:
 
 ```
 Enter movie plot:
-Jesse, who meets a French student, Céline, on a train heading through Europe.
-Feeling an instant connection, Jesse convinces Céline to get off the train with
-him in Vienna and spend the night exploring the city before his flight the next
-morning. As they wander through streets, cafés, parks, and landmarks, they talk
-deeply about life, love, relationships, and their fears about the future,
-gradually forming a romantic bond during their brief time together. Knowing their
-meeting is temporary, they part ways in the morning but agree to return to the
-same station in six months, leaving their reunion to fate.
+Jesse, who meets a French student, Céline, on a train heading through Europe. Feeling an instant connection, Jesse convinces Céline to get off the train with him in Vienna and spend the night exploring the city before his flight the next morning. As they wander through streets, cafés, parks, and landmarks, they talk deeply about life, love, relationships, and their fears about the future, gradually forming a romantic bond during their brief time together. Knowing their meeting is temporary, they part ways in the morning but agree to return to the same station in six months, leaving their reunion to fate.
 ```
 
 Output:
 
 ```
+Extracted Features: Genre="Romantic Drama", Themes=[chance encounter romance fate], Keywords=[train journey Vienna short romantic encounter longing]
+
 Similar Titles
 --------------
-Forever After
-Heartbeat Away
-Candlelight Dinner
+Broken Oath
+Lost Fang
+Lost Drift
 
 Investment Recommendation
 -------------------------
 Optimal Budget: $120M
-Expected ROI: 4.8x
-Confidence Interval: 3.2x – 6.3x
+Expected ROI: 3.0x
+Confidence Interval: 2.1x – 4.0x
 
 Explanation
 -----------
-The plot shares strong thematic parallels with romantic films like Forever After
-and Heartbeat Away, which center on fleeting yet deeply meaningful connections
-between strangers. The emphasis on fate, emotional vulnerability, and the
-bittersweet nature of temporary love mirrors the narrative structure of these
-historically successful romance titles.
+These movies are similar to the user plot in terms of their focus on relationships and deep emotional connections between the characters. They all explore themes of love, loss, and the passage of time, and have a strong emphasis on character development and introspection. Additionally, they all fall under the drama genre, which allows for a more nuanced exploration of the characters' emotions and experiences.
 ```
 
 Note: Similar titles, ROI values, and the optimal budget will vary between runs due to the stochastic nature of the Monte Carlo simulation and LLM responses.

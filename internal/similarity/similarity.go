@@ -29,21 +29,28 @@ func FindSimilarMovies(features llm.PlotFeatures, movies []model.Movie) []model.
 	for _, m := range movies {
 		score := 0
 
-		// Genre match: +3
-		if strings.EqualFold(m.Genre, features.Genre) {
+		movieGenre := strings.ToLower(m.Genre)
+		movieTheme := strings.ToLower(m.Theme)
+
+		// Genre match: +3 (partial match — e.g. "Romance" matches "Romantic Drama")
+		featGenre := strings.ToLower(features.Genre)
+		if strings.Contains(featGenre, movieGenre) || strings.Contains(movieGenre, featGenre) {
 			score += 3
 		}
 
-		// Theme overlap: +2 for each matching theme
+		// Theme overlap: +2 for each matching theme (partial match)
 		for _, theme := range features.Themes {
-			if strings.EqualFold(m.Theme, theme) {
+			t := strings.ToLower(theme)
+			if strings.Contains(t, movieTheme) || strings.Contains(movieTheme, t) {
 				score += 2
 			}
 		}
 
-		// Keyword overlap: +1 for each keyword matching genre or theme
+		// Keyword overlap: +1 for each keyword matching genre or theme (partial match)
 		for _, kw := range features.Keywords {
-			if strings.EqualFold(m.Genre, kw) || strings.EqualFold(m.Theme, kw) {
+			k := strings.ToLower(kw)
+			if strings.Contains(k, movieGenre) || strings.Contains(movieGenre, k) ||
+				strings.Contains(k, movieTheme) || strings.Contains(movieTheme, k) {
 				score += 1
 			}
 		}

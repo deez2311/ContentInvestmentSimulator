@@ -36,6 +36,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Printf("\nExtracted Features: Genre=%q, Themes=%v, Keywords=%v\n", features.Genre, features.Themes, features.Keywords)
+
 	similar := similarity.FindSimilarMovies(features, movies)
 
 	if len(similar) == 0 {
